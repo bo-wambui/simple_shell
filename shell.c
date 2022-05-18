@@ -1,89 +1,89 @@
 #include "shell.h"
+
 /**
- * get_command - This function read the input line
- * int the shell and create a array with this strings
- * Return: a string with the comand line
+ * sig_handler - checks if Ctrl C is pressed
+ * @sig_num: int
  */
-char *get_command(void)
+void sig_handler(int sig_num)
 {
-	char *buffer = NULL;
-	size_t size = 0; /*Number of bytes*/
-	int length = 0; /*except the null \0*/
-	/*
-	 * getline create a buffer with enough size for save the
-	 * input for the command line
-	 */
-	length = getline(&buffer, &size, stdin); /*stdio.h*/
-	if (length == EOF)
+	if (sig_num == SIGINT)
 	{
-		free(buffer);
+		_puts("\n#cisfun$ ");
+	}
+}
+
+/**
+* _EOF - handles the End of File
+* @len: return value of getline function
+* @buff: buffer
+ */
+void _EOF(int len, char *buff)
+{
+	(void)buff;
+	if (len == -1)
+	{
+		if (isatty(STDIN_FILENO))
+		{
+			_puts("\n");
+			free(buff);
+		}
 		exit(0);
 	}
-	return (buffer);
 }
 /**
- * check_builtin - Function
- * @f: funtion to check
- * @command: line comand
- * @buffer: memory space
- * Return: 0 always
- */
-void check_builtin(int (*f)(), char **buffer, char *command)
+  * _isatty - verif if terminal
+  */
+
+void _isatty(void)
 {
-	if (f)
-	{
-		if (f() == 1)
-		{
-			free(command);
-			free(buffer);
-			exit(127);
-		}
-	}
+	if (isatty(STDIN_FILENO))
+		_puts("#cisfun$ ");
 }
 /**
- * shell - While loop infinite
- * Return: void
+ * main - Shell
+ * Return: 0 on success
  */
-int shell(void)
+
+int main(void)
 {
-	int (*function)(), error_numbs;
-	char *command = NULL, **list_token = NULL, *path = NULL;
+	ssize_t len = 0;
+	char *buff = NULL, *value, *pathname, **arv;
+	size_t size = 0;
+	list_path *head = '\0';
+	void (*f)(char **);
 
-	while (1)
+	signal(SIGINT, sig_handler);
+	while (len != EOF)
 	{
-		char *prompt = "SHELL_GOD$ ";
-
-		if (isatty(STDIN_FILENO))
-			write(1, prompt, _strlen(prompt));
-		command = get_command();
-		if (command == NULL)
-			continue;
-		list_token = tk_cm(command, " \n\t");
-		function = get_builtins(list_token[0]);
-		check_builtin(function, list_token, command);
-		path = _path_dir(list_token[0]);
-		if (path)
-		{
-			if (execution(list_token, path) == -1)
-			{
-				error_numbs = errno;
-				error_input(error_numbs, command);
-				free(path);
-				free_tokens(list_token);
-				continue;
-			}
-			else
-			{
-				free(path);
-				free(list_token);
-				free(command);
-				continue; }
-		}
+		_isatty();
+		len = getline(&buff, &size, stdin);
+		_EOF(len, buff);
+		arv = splitstring(buff, " \n");
+		if (!arv || !arv[0])
+			execute(arv);
 		else
 		{
-			free(path);
-			free_tokens(list_token);
-			continue; }
+			value = _getenv("PATH");
+			head = linkpath(value);
+			pathname = _which(arv[0], head);
+			f = checkbuild(arv);
+			if (f)
+			{
+				free(buff);
+				f(arv);
+			}
+			else if (!pathname)
+				execute(arv);
+			else if (pathname)
+			{
+				free(arv[0]);
+				arv[0] = pathname;
+				execute(arv);
+			}
+		}
 	}
+	free_list(head);
+	freearv(arv);
+	free(buff);
 	return (0);
 }
