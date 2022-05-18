@@ -1,119 +1,97 @@
-.TH SIMPLE_SHELL 1 "May 18, 2022" "ALX-SE" "General Commands Manual"
+B.\"Manpage for simple shell
+.\"Created by Samuel Ifada and Israel Adenuga
+                                                  .TH SODASH 1 "May 18 2022" "SODA SHELL - Simple Shell man page"
 
 .SH NAME
-       Based in bash - GNU Bourne-Again Shell
-       simple_shell - command language interpreter that reads from standard input or file
+sodash\fR \- simple UNIX command interpreter
 
 .SH SYNOPSIS
-       ./simple_shell
-       ./simple_shell [file]
-       [command] | ./simple_shell
-       
-       gcc -Wall -Werror -Wextra -pedantic *.c -o simple_shell
+soda\fR [\fIfilename\fR]
+
+.SH COPYRIGHT
+soda is Copyright (C) 2022 by Samuel Ifada and Israel Adenuga
 
 .SH DESCRIPTION
-simple_shell is a command language interpreter that executes commands read from the standard input or from a file.
+Soda\fR is a sh-compatible command language interpreter that executes commands read from the standard input or from a file.
 
-.TP
-.B builtins
+.SH ARGUMENTS
+If arguments remain after option processing, the first argument is assumed to be the name of a file containing shell commands. Sodash reads and executes commands from this file, then exits. Sodash exit status is the exit status of the last command executed in the script. If no commands are executed, the exit status is 0. An attempt is first made to open the file in the current directory, and, if no file is found, then the shell searches the directories in PATH for the script.
 
-.TP
-.BR env
-list all environment variables
+.SH INVOCATION
+Sodash is started with the standard input connected to the terminal (as determined by \fIisatty(3)\fR), the interactive mode is executed. Also non-interactively option can be executed.
+When Sodash is executed interactively, the prompt is displayed  \fI^-^ \fR to read any command, the command line argument is invoked and is treated as the first argument.
 
-.TP
-.BR setenv " " [name] " " [value]
-sets the "name" environment variable with to value "value" or updates it if it already exists
+.SH DEFINITIONS
+The following definitions are used throughout the rest of this document.
 
-.TP
-.BR unsetenv " " [name]
-deletes the "name" environment variable from the enviroment variables
+- \fIblank\fR
 
-.TP
-.BR cd " " [dir_path]
-changes the current working directory to "dir_path"
+A space or tab.
 
-.TP
-.BR alias " " [name=[value] ...]
-lists or sets command aliases
+- \fIword\fR
 
-.TP
-.BR help " " [builtin_name]
-displays the help for a builtin command
+A sequence of characters considered as a single unit by the shell. Also known as a token\fR.
 
-.TP
-.BR history
-displays the history commands used by the user in the current sesion
+- \fIname\fR
 
-.TP
-\fB Return (Exit Value) \fR
+A word consisting only of alphanumeric characters and underscores, and beginning with an alphabetic character or an underscore. Also referred to as an identifier\fR.
 
-Upon termination of the simple shell program, an exit value will be set according to the status of the last command
-executed. If the command ran succesfuly, the exit value will be zero (0).
+control operator\fR
+A token that performs a control function. It is one of the following symbols:
+|| & && ; ;;
 
-.TP
-\fBFORMAT OF COMMAND INPUT\fR
+.SH Command Execution
+After a command has been split into words, if it results in a simple command and an optional list of arguments, the following actions are taken.
 
-The simple shell can work in two different modes, \fIinteractive\fR and \fInon-interactive\fR. In both modes, commands can be written with their absolute path or simply their executable name if they exist in one of the folders defined by PATH.
+If the command name contains no slashes, the shell attempts to locate it. If there exists a shell function by that name, that function is invoked. If the name does not match a function, the shell searches for it in the list of shell builtins. If a match is found, that builtin is invoked.
 
-Example:
+If the name is neither a shell function nor a builtin, and contains no slashes, \fISodash\fR searches each element of the \fIPATH\fR for a directory containing an executable file by that name. \fISodash\fR uses a hash table to remember the full pathnames of executable files. A full search of the directories in \fIPATH\fR is performed only if the command is not found in the hash table. If the search is unsuccessful, the shell searches for a defined shell function named "command not found". If that function exists, it is invoked with the original command and the original command's arguments as its arguments, and the function's exit status becomes the exit status of the shell. If that function is not defined, the shell prints an error message and returns an exit status of 127.
 
-\fB/bin/ls\fR is the same as \fBls\fR (ls exists in one of the PATH folders)
+If the search is successful, or if the command name contains one or more slashes, the shell executes the named program in a separate execution environment. Argument 0 is set to the name given, and the remaining arguments to the command are set to the arguments given, if any.
 
+.SH Environment
+\fBSodash\fR takes a copy from \fBBash\fR environment of the parent process where it was executed. The environment is an array of strings containing the variables in the format.
+When a program is invoked it is given an array of strings called the environment. This is a list of name-value pairs, of the form name=value.
 
-.IP \fB-Interactive Mode:\fR
+The shell provides several ways to manipulate the environment. On invocation, the shell scans its own environment and creates a parameter for each name found, automatically marking it for export to child processes. Executed commands inherit the environment. The export and declare -x commands allow parameters and functions to be added to and deleted from the environment.
 
-In this condition, the shell will display a prompt ($) that will indicate that the user can provide commands by writing them
-with a keyboard. In order to execute the commands the user will need to press the enter key (new line).
+.SH Exit Status
+Sodash\fR exit status of an executed command is the value returned by the waitpid system call or equivalent function. A command which exits with a zero exit status has succeeded. An exit status of zero indicates success. A non-zero exit status indicates failure.
 
-Each time a command is executed, the prompt will reappear and wait for a new user input.
+If a command is not found, the child process created to execute it returns a status of 127.
 
-Example:
+All builtins return zero on success and one or two on incorrect usage (indicated by a corresponding error message).
 
-\fBvagrant@vagrant-ubuntu-trusty-64:~/simple_shell$\fR ./hsh
+.SH BUILTINS
+The following builtin commands are supported:
 
-$ ls
+.B env
 
-file1 file2 dira dirb
+- Print the current enviroment
 
-$
+.B setenv [Variable] [Value]
 
-In order to exit the simple shell, the user must write "exit" command and press enter or press the combination keys CTRL + D, as the CTRL + C signal is reserved only for internal script termination and it does not exit the shell.
+- Creates a new environment variab;e or modifies an existing one.
 
-.IP \fB-Non-interactive Mode:\fR
+.B unsetenv [Variable]
 
-In this condition, the shell will run commands provided through a pipe at the moment of execution, and will not display a prompt
-($) or wait for new user input:
+- Removes an environmental variable.
 
-Example:
+.B exit [Status]
 
-\fBvagrant@vagrant-ubuntu-trusty-64:~/simple_shell$\fR echo "ls" | ./hsh
+- Exit the shell
 
-file1 file2 file3 file4
+.B cd [Directory]
 
-\fBvagrant@vagrant-ubuntu-trusty-64:~/simple_shell$\fR
+- Changes the current directory of the process to DIRECTORY.  If no argument is given, the command is interpreted as cd $HOME. If the argument - is given, the command is interpreted as cd $OLDPWD. The environment variables PWD and OLDPWD are updated after a change of directory.
 
-.SH EXAMPLES
-.B Interactive
-       vagrant@vagrant-ubuntu-trusty-64:~/simple_shell$ ./simple_shell
-       $ ls
-       file0 file1 file2
-       $ echo 123
-       123
-       $ echo $?
-       0
-       $ exit
-       vagrant@vagrant-ubuntu-trusty-64:~/simple_shell$
+.B help
 
-.B Non Interactive
-       vagrant@vagrant-ubuntu-trusty-64:~/simple_shell$ echo "pwd" | ./simple_shell
-       /home/vagrant/simple_shell
+- Print help message of builtin command
 
-       vagrant@vagrant-ubuntu-trusty-64:~/simple_shell$ echo "ls" | ./simple_shell
-       file0 file1 file2
-
---
+.SH SEE ALSO
+access(2), chdir(2), execve(2), _exit(2), exit(3), fflush(3), fork(2), free(3), isatty(3), getcwd(3), malloc(3), open(2), read(2), sh(1), signal(2), stat(2), wait(2), write(2)
+Sodash\fR takes basic functionality of the \fBsh\fR shell. This man page is based on the man page bash(1)
 
 .SH AUTHORS
-Micheal Shokunbi <mightysho123@yahoo.com>
-Elnatan Samuel <krosection999@gmail.com>
+Ogwalu Samuel Ifada Israel Adenuga
