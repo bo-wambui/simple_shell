@@ -26,7 +26,7 @@ int is_cdir(char *path, int *i)
  * _which - locates a command
  *
  * @cmd: command name
- * @_environment: environment variable
+ * @_environ: environment variable
  * Return: location of the command.
  */
 char *_which(char *cmd, char **_environ)
