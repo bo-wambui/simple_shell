@@ -2,7 +2,7 @@
 
 /**
  * aux_help - Help information for the builtin help.
- * Return: no return
+ * Return: no return value
  */
 void aux_help(void)
 {

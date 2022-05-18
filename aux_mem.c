@@ -1,8 +1,8 @@
 #include "main.h"
 
 /**
- * _memcpy - copies information between void pointers.
- * @newptr: destination pointer.
+ * _memcpy - it copies information between void pointers.
+ * @newptr: its a destination pointer.
  * @ptr: source pointer.
  * @size: size of the new pointer.
  *

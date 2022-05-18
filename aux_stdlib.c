@@ -1,9 +1,9 @@
 #include "main.h"
 
 /**
- * get_len - Get the lenght of a number.
+ * get_len - Get the length of a number.
  * @n: type int number.
- * Return: Lenght of a number.
+ * Return: Length of a number.
  */
 int get_len(int n)
 {

@@ -2,8 +2,8 @@
 
 /**
  * error_env - error message for env in get_env.
- * @datash: data relevant (counter, arguments)
- * Return: error message.
+ * @datash: data that is relevant (counter, arguments)
+ * Return: the error message.
  */
 char *error_env(data_shell *datash)
 {

@@ -5,9 +5,9 @@
  *
  * @datash: data relevant (directory)
  * @msg: message to print
- * @error: output message
- * @ver_str: counter lines
- * Return: error message
+ * @error: output the message
+ * @ver_str: counter the lines
+ * Return: the error message
  */
 char *strcat_cd(data_shell *datash, char *msg, char *error, char *ver_str)
 {
